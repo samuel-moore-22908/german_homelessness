@@ -1,0 +1,63 @@
+== loading
+homeless: 76 historic codes dropped; nonzero cells among them: [{'ags': '16056', 'wave': 2022, 'NAT': 'NATD', 'value': 10.0}, {'ags': '16056', 'wave': 2022, 'NAT': '%TOTAL%', 'value': 10.0}]
+  harmonise: 16056 -> 16063, 5 rows, sums {'homeless_total': 10.0, 'homeless_german': 10.0, 'homeless_foreign': 0.0}
+  harmonise: 06415 -> 06435, 5 rows, sums {'homeless_total': 920.0, 'homeless_german': 35.0, 'homeless_foreign': 885.0}
+homeless: 2000 rows after restricting to 400-Kreis frame
+  harmonise: 06415 -> 06435, 5 rows, sums {'unemp_count': 22961.0, 'labour_force': 267632.17394526844}
+rents: 2025 BBSR vs Deutschlandatlas preis_miet: n=400, max |diff|=0.005
+== checks
+rows=2000, Kreise=400, waves=[np.int64(2022), np.int64(2023), np.int64(2024), np.int64(2025), np.int64(2026)]
+missing cells by wave:
+      gdp_nominal  gdp_real  pop_vgr_1000  gdp_pc_nominal  gdp_pc_real
+wave                                                                  
+2022            0         0             0               0            0
+2023            0         0             0               0            0
+2024            0         0             0               0            0
+2025            0         0             0               0            0
+2026          400       400           400             400          400
+wave 2022: total=178,125  german=55,035  foreign=123,090  zero-Kreise=9  |german+foreign-total| max=5 (independent rounding to 5)
+wave 2023: total=372,020  german=60,195  foreign=311,835  zero-Kreise=8  |german+foreign-total| max=5 (independent rounding to 5)
+wave 2024: total=439,410  german=61,550  foreign=377,850  zero-Kreise=9  |german+foreign-total| max=5 (independent rounding to 5)
+wave 2025: total=474,690  german=65,670  foreign=409,000  zero-Kreise=6  |german+foreign-total| max=5 (independent rounding to 5)
+wave 2026: total=452,865  german=67,215  foreign=385,705  zero-Kreise=5  |german+foreign-total| max=5 (independent rounding to 5)
+zero-count Kreis-waves:
+  ags                  kreis_name  wave
+03255       Holzminden, Landkreis  2022
+03255       Holzminden, Landkreis  2023
+03255       Holzminden, Landkreis  2024
+03255       Holzminden, Landkreis  2025
+07135      Cochem-Zell, Landkreis  2022
+07135      Cochem-Zell, Landkreis  2023
+07233      Vulkaneifel, Landkreis  2023
+07233      Vulkaneifel, Landkreis  2024
+07233      Vulkaneifel, Landkreis  2025
+07336            Kusel, Landkreis  2023
+09278  Straubing-Bogen, Landkreis  2022
+09377    Tirschenreuth, Landkreis  2022
+09475              Hof, Landkreis  2022
+09475              Hof, Landkreis  2023
+09475              Hof, Landkreis  2024
+09475              Hof, Landkreis  2025
+09475              Hof, Landkreis  2026
+09764 Memmingen, kreisfreie Stadt  2022
+09764 Memmingen, kreisfreie Stadt  2023
+16055    Weimar, kreisfreie Stadt  2024
+16062       Nordhausen, Landkreis  2022
+16062       Nordhausen, Landkreis  2023
+16062       Nordhausen, Landkreis  2024
+16062       Nordhausen, Landkreis  2025
+16062       Nordhausen, Landkreis  2026
+16065             Kyffhäuserkreis  2024
+16068         Sömmerda, Landkreis  2026
+16069   Hildburghausen, Landkreis  2022
+16070                   Ilm-Kreis  2024
+16071    Weimarer Land, Landkreis  2024
+16074        Saale-Holzland-Kreis  2023
+16074        Saale-Holzland-Kreis  2024
+16074        Saale-Holzland-Kreis  2025
+16074        Saale-Holzland-Kreis  2026
+16076            Greiz, Landkreis  2022
+16076            Greiz, Landkreis  2025
+16076            Greiz, Landkreis  2026
+unemp_rate range 1.7-15.2; rent range 4.78-21.01; deflator range 101.7-131.2
+panel_1600: rows=1600, complete on ['homeless_total', 'unemp_rate', 'gdp_nominal', 'rent_asking', 'cpi_state', 'gdp_deflator_state']: 1600

@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# INKAR bulk download (434 MB) was evaluated and not used
+data/raw/inkar_*.zip
