@@ -19,10 +19,12 @@ import numpy as np
 import pandas as pd
 import pyfixest as pf
 import statsmodels.api as sm
+from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results"
 X = ["ln_unemp", "ln_cpi", "ln_gdppc", "ln_rent"]
+N_CLUSTERS = 16  # SEs clustered by state
 OUTCOMES = {"homeless_total": "Total", "homeless_german": "German", "homeless_foreign": "Foreign"}
 
 
@@ -53,7 +55,7 @@ def statsmodels_check(d: pd.DataFrame) -> pd.Series:
     Z = pd.get_dummies(d[["ags", "wave"]].astype(str), drop_first=True, dtype=float)
     Xm = sm.add_constant(pd.concat([d[X], Z], axis=1))
     m = sm.GLM(d["rate_homeless_total"], Xm, family=sm.families.Poisson(),
-               var_weights=d.population).fit(cov_type="cluster", cov_kwds={"groups": d.ags.astype("category").cat.codes})
+               var_weights=d.population).fit(cov_type="cluster", cov_kwds={"groups": d.state.astype("category").cat.codes})
     return m.params[X]
 
 
@@ -66,12 +68,14 @@ def main() -> None:
         lines.append("| Spec | " + " | ".join(X) + " | N | Obs dropped (all-zero Kreise) |")
         lines.append("|---|" + "---|" * (len(X) + 2))
         for name, rhs, sub in specs(d):
-            fit = pf.fepois(f"rate_{y} ~ {rhs}", data=sub, weights="population", vcov={"CRV1": "ags"})
+            fit = pf.fepois(f"rate_{y} ~ {rhs}", data=sub, weights="population", vcov={"CRV1": "state"})
             t = fit.tidy()
             n = fit._N
             cells = []
             for x in X:
-                b, se, pv = t.loc[x, "Estimate"], t.loc[x, "Std. Error"], t.loc[x, "Pr(>|t|)"]
+                b, se = t.loc[x, "Estimate"], t.loc[x, "Std. Error"]
+                # pyfixest uses normal p-values for Poisson; with 16 clusters use t(G-1).
+                pv = 2 * stats.t.sf(abs(b / se), N_CLUSTERS - 1)
                 stars = "***" if pv < 0.01 else "**" if pv < 0.05 else "*" if pv < 0.1 else ""
                 cells.append(f"{b:.3f}{stars} ({se:.3f})")
                 rows.append({"outcome": ylab, "spec": name, "term": x, "coef": b, "se": se, "p": pv, "n": n})
@@ -88,7 +92,8 @@ def main() -> None:
         "Sample: `data/panel_1600.csv` (400 Kreise x waves 2022-2025). Outcome: homeless per 1,000 residents,",
         "weighted by population (31 Dec t-1). Equivalent to PPML on counts with a log-population offset.",
         "Regressors are logs of: unemployment rate, state CPI, real GDP per capita, real asking rent (all year t-1).",
-        "Coefficients are elasticities. SEs clustered by Kreis in parentheses. * p<0.1, ** p<0.05, *** p<0.01.",
+        "Coefficients are elasticities. SEs clustered by state (16 clusters) in parentheses;",
+        "p-values from t(15). * p<0.1, ** p<0.05, *** p<0.01.",
         "Kreise with zero homeless in every wave are dropped under Kreis FE (no within variation).",
     ]
     (RES / "ppml.md").write_text("\n".join(header + lines) + "\n", encoding="utf-8")
